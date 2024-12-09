@@ -1,0 +1,42 @@
+@startuml
+skinparam linetype ortho
+skinparam class {
+    BackgroundColor<<PlayerEntity>> LightYellow
+    BackgroundColor<<TeamEntity>> LightBlue
+    BackgroundColor<<GameEntity>> LightGreen
+    BackgroundColor<<ChampionEntity>> LightPink
+}
+
+entity "Player" as P <<PlayerEntity>> {
+    * player_id : string <<PK>>
+    --
+    player_name : string
+    position : string
+}
+
+entity "Team" as T <<TeamEntity>> {
+    * team_id : string <<PK>>
+    --
+    team_name : string
+}
+
+entity "Game" as G <<GameEntity>> {
+    * game_id : string <<PK>>
+    --
+    game_date : datetime
+    league : string
+    patch : string
+}
+
+entity "Champion" as C <<ChampionEntity>> {
+    * champion_id : string <<PK>>
+    --
+    champion_name : string
+}
+
+' Relationships
+P ||--o{ T : "plays for"
+T ||--o{ G : "participates in"
+C ||--o{ G : "featured in"
+
+@enduml

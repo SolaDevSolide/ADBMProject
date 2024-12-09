@@ -1,0 +1,122 @@
+@startuml
+
+' Use orthogonal lines for better readability
+skinparam linetype ortho
+
+' Define entities with stereotypes for color coding
+entity "Player" as P <<PlayerEntity>> {
+    * player_id : string <<PK>>
+    --
+    player_name : string
+    position : string
+}
+
+entity "Team" as T <<TeamEntity>> {
+    * team_id : string <<PK>>
+    --
+    team_name : string
+}
+
+entity "Game" as G <<GameEntity>> {
+    * game_id : string <<PK>>
+    --
+    game_date : datetime
+    league : string
+    patch : string
+}
+
+entity "Champion" as C <<ChampionEntity>> {
+    * champion_id : string <<PK>>
+    --
+    champion_name : string
+}
+
+entity "PlayerStats" as PS <<StatsEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * player_id : string <<PK>> <<FK>>
+    --
+    team_id : string <<FK>>
+    position : string
+    champion_id : string <<FK>>
+    kills : int
+    deaths : int
+    assists : int
+    gold_earned : int
+    cs : int
+}
+
+entity "TeamStats" as TS <<StatsEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    --
+    total_kills : int
+    total_deaths : int
+    total_assists : int
+}
+
+entity "Ban" as B <<PickBanEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    * ban_order : int <<PK>>
+    --
+    champion_id : string <<FK>>
+}
+
+entity "Pick" as PK <<PickBanEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    * pick_order : int <<PK>>
+    --
+    player_id : string <<FK>>
+    champion_id : string <<FK>>
+}
+
+' Apply colors to stereotypes
+skinparam class {
+    BackgroundColor<<PlayerEntity>> LightYellow
+    BackgroundColor<<TeamEntity>> LightBlue
+    BackgroundColor<<GameEntity>> LightGreen
+    BackgroundColor<<ChampionEntity>> LightPink
+    BackgroundColor<<StatsEntity>> Wheat
+    BackgroundColor<<PickBanEntity>> Thistle
+    BorderColor Black
+    ArrowColor Black
+}
+
+' Arrange entities to minimize line crossings
+P -down- PS
+PS -right- C
+PS -down- G
+PS -left- T
+
+TS -left- T
+TS -down- G
+
+B -right- C
+B -down- G
+B -left- T
+
+PK -right- C
+PK -down- G
+PK -left- T
+PK -up- P
+
+' Define relationships with correct cardinalities and labels
+P "1" ||--o{ "0..*" PS : records
+T "1" ||--o{ "0..*" PS : " "
+G "1" ||--o{ "10" PS : includes
+C "1" ||--o{ "0..*" PS : used_in
+
+T "1" ||--o{ "0..*" TS : has_stats
+G "1" ||--o{ "2" TS : includes
+
+T "1" ||--o{ "0..5" B : makes_bans
+G "1" ||--o{ "0..10" B : includes
+C "1" ||--o{ "0..*" B : is_banned
+
+T "1" ||--o{ "5" PK : makes_picks
+G "1" ||--o{ "10" PK : includes
+P "1" ||--o{ "0..*" PK : selects
+C "1" ||--o{ "0..*" PK : is_picked
+
+@enduml

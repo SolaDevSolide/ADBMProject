@@ -1,0 +1,63 @@
+@startuml
+skinparam linetype ortho
+skinparam class {
+    BackgroundColor<<StatsEntity>> Wheat
+    BackgroundColor<<PickBanEntity>> Thistle
+    BorderColor Black
+    ArrowColor Black
+}
+
+entity "PlayerStats" as PS <<StatsEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * player_id : string <<PK>> <<FK>>
+    --
+    team_id : string <<FK>>
+    position : string
+    champion_id : string <<FK>>
+    kills : int
+    deaths : int
+    assists : int
+}
+
+entity "TeamStats" as TS <<StatsEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    --
+    total_kills : int
+    total_deaths : int
+}
+
+entity "Ban" as B <<PickBanEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    * ban_order : int <<PK>>
+    --
+    champion_id : string <<FK>>
+}
+
+entity "Pick" as PK <<PickBanEntity>> {
+    * game_id : string <<PK>> <<FK>>
+    * team_id : string <<PK>> <<FK>>
+    * pick_order : int <<PK>>
+    --
+    player_id : string <<FK>>
+    champion_id : string <<FK>>
+}
+
+' Relationships
+PS }o--|| Player : "for"
+PS }o--|| Game : "in"
+PS }o--|| Champion : "uses"
+
+TS }o--|| Team : "of"
+TS }o--|| Game : "in"
+
+B }o--|| Team : "by"
+B }o--|| Game : "in"
+B }o--|| Champion : "of"
+
+PK }o--|| Player : "by"
+PK }o--|| Game : "in"
+PK }o--|| Champion : "of"
+
+@enduml
