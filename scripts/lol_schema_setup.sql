@@ -8,9 +8,9 @@ CREATE ROLE read_only_role;
 -- ==========================
 -- SECTION 2: CREATE USERS
 -- ==========================
-CREATE USER admin_user IDENTIFIED BY "{{ADMIN_USER_PASS}}";
-CREATE USER manager_user IDENTIFIED BY "{{MANAGER_USER_PASS}}";
-CREATE USER regular_user IDENTIFIED BY "{{REGULAR_USER_PASS}}";
+CREATE USER admin_user IDENTIFIED BY "Admin#123";
+CREATE USER manager_user IDENTIFIED BY "Manager#123";
+CREATE USER regular_user IDENTIFIED BY "Regular#123";
 
 -- Grant CONNECT so the users can log in
 GRANT CONNECT TO admin_user;

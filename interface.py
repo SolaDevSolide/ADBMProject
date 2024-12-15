@@ -1,7 +1,7 @@
 import os
 import sys
 
-import cx_Oracle
+import oracledb
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget,
@@ -16,9 +16,9 @@ COMPLEX_QUERIES = [
     # 1) Join multiple tables
     ("Join: PlayerStats & Player & Team", """
      SELECT pl.player_name, ps.kills, ps.deaths, ps.assists, t.team_name
-     FROM PlayerStats ps
-     JOIN Player pl ON ps.player_id = pl.player_id
-     JOIN Team t ON ps.team_id = t.team_id
+     FROM PLAYERSTATS ps
+     JOIN PLAYER pl ON ps.player_id = pl.player_id
+     JOIN TEAM t ON ps.team_id = t.team_id
      WHERE ROWNUM <= 20
      """),
     # 2) Analytical function: SUM or AVG
@@ -50,13 +50,17 @@ COMPLEX_QUERIES = [
      """),
     # 5) Another join/subquery
     ("Join: TeamStats & Team subquery example", """
-     SELECT t.team_name, ts.game_id, ts.total_kills, ts.total_deaths
-     FROM TeamStats ts
-     JOIN Team t ON ts.team_id = t.team_id
-     WHERE ts.total_kills > (
-       SELECT AVG(total_kills) FROM TeamStats
-     )
-     AND ROWNUM <= 20
+     SELECT 
+        ps.game_id,
+        pl.player_name, 
+        ps.kills, 
+        ps.deaths, 
+        ps.assists, 
+        t.team_name
+    FROM PLAYERSTATS ps
+    LEFT JOIN PLAYER pl ON ps.player_id = pl.player_id
+    LEFT JOIN TEAM t ON ps.team_id = t.team_id
+    WHERE ROWNUM <= 20
      """),
     # 6) Another aggregated query
     ("Aggregated Kills by Patch", """
@@ -76,7 +80,7 @@ class LoginDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("LoL Worlds DB Login")
-        self.setFixedSize(300, 180)
+        self.setFixedSize(600, 500)
 
         layout = QVBoxLayout()
 
@@ -137,8 +141,8 @@ class MainWindow(QMainWindow):
     """
     def __init__(self, host, port, service, username, password, role):
         super().__init__()
-        self.setWindowTitle("LoL Worlds Modern Interface")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setWindowTitle("LoL Worlds Interface")
+        self.setGeometry(100, 100, 1200, 600)
 
         self.host = host
         self.port = port
@@ -159,17 +163,17 @@ class MainWindow(QMainWindow):
 
     def init_db_connection(self):
         """
-        Initiates cx_Oracle connection with user credentials.
+        Initiates oracledb connection with user credentials.
         """
         dsn_str = f"{self.host}:{self.port}/{self.service}"
         try:
-            self.connection = cx_Oracle.connect(
+            self.connection = oracledb.connect(
                 user=self.db_username,
                 password=self.db_password,
                 dsn=dsn_str
             )
             print("Connected as role:", self.role)
-        except cx_Oracle.Error as e:
+        except oracledb.Error as e:
             QMessageBox.critical(self, "DB Error", f"Failed to connect: {e}")
             sys.exit(1)
 
@@ -183,6 +187,7 @@ class MainWindow(QMainWindow):
 
         # We'll hold a reference to a QTableWidget to display results
         self.query_table = QTableWidget()
+        self.query_table.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
         layout.addWidget(self.query_table)
 
         # Buttons for each query
@@ -214,8 +219,8 @@ class MainWindow(QMainWindow):
                     self.query_table.setItem(r_index, c_index, QTableWidgetItem(str(val)))
             self.query_table.resizeColumnsToContents()
             cursor.close()
-        except cx_Oracle.Error as e:
-            QMessageBox.critical(self, "Query Error", f"Error running query: {e}")
+        except oracledb.Error as e:
+            QMessageBox.critical(self, "Query Error", f"Error running query: {e}\nSQL: {sql}")
 
     def create_graph_tab(self):
         """
@@ -266,7 +271,7 @@ class MainWindow(QMainWindow):
             plt.xticks(rotation=45, ha='right')
             plt.tight_layout()
             plt.show()
-        except cx_Oracle.Error as e:
+        except oracledb.Error as e:
             QMessageBox.critical(self, "Chart Error", f"Error running chart query: {e}")
 
     def create_modify_tab(self):
@@ -310,18 +315,18 @@ class MainWindow(QMainWindow):
             self.connection.commit()
             cursor.close()
             QMessageBox.information(self, "Success", "DML executed successfully.")
-        except cx_Oracle.Error as e:
+        except oracledb.Error as e:
             QMessageBox.critical(self, "DML Error", f"Error running DML: {e}")
 
 
 def main():
     # Load environment variables from .env file
-    load_dotenv("/")
+    load_dotenv()
 
     # Get DB connection details from .env
     ORA_HOST = os.getenv("ORA_HOST", "localhost")
     ORA_PORT = os.getenv("ORA_PORT", "1521")
-    ORA_SERVICE = os.getenv("ORA_SERVICE", "PDB1")
+    ORA_SERVICE = os.getenv("ORA_SERVICE", "XEPDB1")
     SYS_PASS = os.getenv("SYS_PASS")
     ADMIN_USER_PASS = os.getenv("ADMIN_USER_PASS")
     MANAGER_USER_PASS = os.getenv("MANAGER_USER_PASS")
@@ -336,7 +341,7 @@ def main():
     else:
         sys.exit(0)
 
-    window = MainWindow(host, port, service, username, password, role)
+    window = MainWindow(ORA_HOST, ORA_PORT, ORA_SERVICE, username, password, role)
     window.show()
     sys.exit(app.exec_())
 

@@ -1,0 +1,6 @@
+oracledb
+matplotlib
+PyQt5
+python-dotenv
+pandas
+cryptography
