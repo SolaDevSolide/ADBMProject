@@ -1,6 +1,6 @@
 # Data Import and Processing Script for Oracle Database
 
-This project is a comprehensive Python-based application designed to process and import data from CSV and Excel files into an Oracle database. It supports advanced error handling, duplicate prevention, seamless integration with existing database schemas, and provides a modern graphical user interface (GUI) for data visualization and management.
+This project is a Python-based application designed to process and import data from CSV and Excel files into an Oracle database. It supports advanced error handling, duplicate prevention, seamless integration with existing database schemas, and provides a graphical user interface (GUI) for data visualization and management.
 
 ## Features
 - **Database Connectivity**:
@@ -60,7 +60,7 @@ CSV2=data/2024_LoL_esports_match_data_from_OraclesElixir_gamedata.csv
 XLS1=data/2024_LoL_esports_match_data_from_OraclesElixir.xlsx
 ```
 
-> **Note**: Ensure that the `.env` file is **not** committed to version control to protect sensitive credentials.
+> **Note**: Ensure that the `.env` file is **not** committed to version control to protect sensitive credentials if you are using anything other than a local database.
 
 ---
 
@@ -202,6 +202,5 @@ ADBMProject/
    - [pandas](https://pandas.pydata.org/)
    - [python-dotenv](https://pypi.org/project/python-dotenv/)
    - [matplotlib](https://matplotlib.org/)
-- **Project Report**: Refer to the LaTeX report for detailed project documentation.
 
 ---
